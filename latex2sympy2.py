@@ -76,25 +76,25 @@ def latex2sympy(sympy: str, variable_values={}):
     else:
         VARIABLE_VALUES = {}
 
-    # setup listener
-    matherror = MathErrorListener(sympy)
+        # setup listener
+        matherror = MathErrorListener(sympy)
 
-    # stream input
-    stream = InputStream(sympy)
-    lex = PSLexer(stream)
-    lex.removeErrorListeners()
-    lex.addErrorListener(matherror)
+        # stream input
+        stream = InputStream(sympy)
+        lex = PSLexer(stream)
+        lex.removeErrorListeners()
+        lex.addErrorListener(matherror)
 
-    tokens = CommonTokenStream(lex)
-    parser = PSParser(tokens)
+        tokens = CommonTokenStream(lex)
+        parser = PSParser(tokens)
 
-    # remove default console error listener
-    parser.removeErrorListeners()
-    parser.addErrorListener(matherror)
+        # remove default console error listener
+        parser.removeErrorListeners()
+        parser.addErrorListener(matherror)
 
-    # process the input
-    return_data = None
-    math = parser.math()
+        # process the input
+        return_data = None
+        math = parser.math()
 
     # if a list
     if math.relation_list():
@@ -474,10 +474,10 @@ def convert_postfix_list(arr, i=0):
                 return mat_mul_flat(res, rh)
             else:
                 return mul_flat(res, rh)
-    elif isinstance(res, tuple) or isinstance(res, list) or isinstance(res, dict):
+    elif ((isinstance(res, tuple) or isinstance(res, list)) and res[0] != 'derivative') or isinstance(res, dict):
         return res
     else:  # must be derivative
-        wrt = res[0]
+        wrt = res[1]
         if i == len(arr) - 1:
             raise Exception("Expected expression for derivative")
         else:
@@ -762,11 +762,11 @@ def convert_frac(frac):
         if (diff_op and frac.upper.start == frac.upper.stop and
             frac.upper.start.type == PSLexer.LETTER_NO_E and
                 frac.upper.start.text == 'd'):
-            return [wrt]
+            return ('derivative', wrt)
         elif (partial_op and frac.upper.start == frac.upper.stop and
               frac.upper.start.type == PSLexer.SYMBOL and
               frac.upper.start.text == '\\partial'):
-            return [wrt]
+            return ('derivative', wrt)
         upper_text = rule2text(frac.upper)
 
         expr_top = None
@@ -1149,7 +1149,7 @@ if __name__ == '__main__':
     # latex2latex(r'b_1=\begin{bmatrix}1 \\ 2 \\ 3 \\ 4\end{bmatrix}')
     # tex = r"(x+2)|_{x=y+1}"
     # tex = r"\operatorname{zeros}(3)"
-    tex = r"\operatorname{rows}(\begin{bmatrix}1 & 2 \\ 3 & 4\end{bmatrix})"
+    tex = r"\frac{\mathrm{d}}{\mathrm{d}x}(x^{2}+x)"
     # print("latex2latex:", latex2latex(tex))
     math = latex2sympy(tex)
     # math = math.subs(variances)
