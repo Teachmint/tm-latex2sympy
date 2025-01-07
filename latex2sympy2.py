@@ -595,8 +595,21 @@ def convert_atom(atom):
         atom_text = ''
         if atom_expr.LETTER_NO_E():
             atom_text = atom_expr.LETTER_NO_E().getText()
-            if atom_text == "I":
-                return sympy.I
+            if atom_text in ["I", "i"]:
+                if atom_expr.subexpr():
+                    raise Exception(f"Cannot use subscript with imaginary unit {atom_text}")
+
+                i_symbol = sympy.I
+                # Only handle superscript for I
+                if atom_expr.supexpr():
+                    supexpr = atom_expr.supexpr()
+                    func_pow = None
+                    if supexpr.expr():
+                        func_pow = convert_expr(supexpr.expr())
+                    else:
+                        func_pow = convert_atom(supexpr.atom())
+                    return sympy.Pow(i_symbol, func_pow, evaluate=False)
+                return i_symbol
         elif atom_expr.GREEK_CMD():
             atom_text = atom_expr.GREEK_CMD().getText()[1:].strip()
         elif atom_expr.OTHER_SYMBOL_CMD():
