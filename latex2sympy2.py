@@ -1057,8 +1057,10 @@ def handle_limit(func):
         var2 = sympy.Symbol('x', real=is_real)
     if sub.SUB():
         direction = "-"
-    else:
+    elif sub.ADD():
         direction = "+"
+    else:
+        direction = "+-"
     approaching = convert_expr(sub.expr())
     content = convert_mp(func.mp())
 
